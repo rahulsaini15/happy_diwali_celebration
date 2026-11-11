@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Diwali Celebration</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Poppins:wght@300;400;600&display=swap');
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #0f0c29;
+            background: radial-gradient(circle at center, #240b36 0%, #0f0c29 100%);
+            color: #fff;
+            overflow-x: hidden;
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        .font-serif-title {
+            font-family: 'Playfair Display', serif;
+        }
+
+        .text-gold {
+            background: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0px 2px 10px rgba(252, 246, 186, 0.2);
+        }
+
+        .bg-gold {
+            background: linear-gradient(to right, #bf953f, #fcf6ba, #b38728);
+        }
+
+        /* Diya Flame Animations */
+        @keyframes flicker {
+            0% { transform: translateX(-50%) scale(1) rotate(-1deg); opacity: 0.9; }
+            20% { transform: translateX(-50%) scale(1.05) rotate(1deg); opacity: 1; }
+            40% { transform: translateX(-50%) scale(0.95) rotate(-2deg); opacity: 0.8; }
+            60% { transform: translateX(-50%) scale(1.02) rotate(1deg); opacity: 0.95; }
+            80% { transform: translateX(-50%) scale(0.98) rotate(-1deg); opacity: 0.85; }
+            100% { transform: translateX(-50%) scale(1) rotate(0deg); opacity: 0.9; }
+        }
+
+        @keyframes glow {
+            0% { box-shadow: 0 0 20px rgba(255, 165, 0, 0.4), 0 0 40px rgba(255, 140, 0, 0.2); }
+            50% { box-shadow: 0 0 35px rgba(255, 165, 0, 0.7), 0 0 60px rgba(255, 69, 0, 0.4); }
+            100% { box-shadow: 0 0 20px rgba(255, 165, 0, 0.4), 0 0 40px rgba(255, 140, 0, 0.2); }
+        }
+
+        .flame {
+            animation: flicker 0.12s infinite alternate;
+            transform-origin: bottom center;
+        }
+
+        .diya-glow-container {
+            animation: glow 2s infinite alternate;
+            border-radius: 50%;
+        }
+
+        /* Particles Canvas */
+        #sparklesCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Glassmorphism */
+        .glass-panel {
+            background: rgba(36, 11, 54, 0.4);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(252, 246, 186, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f0c29; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #b38728; 
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="relative flex flex-col items-center min-h-screen">
+
+    <!-- Canvas for Sparks -->
+    <canvas id="sparklesCanvas"></canvas>
+
+    <!-- Generic Modal for Messages & PIN -->
+    <div id="modalOverlay" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center backdrop-blur-sm transition-opacity">
+        <div class="glass-panel p-8 rounded-2xl max-w-md w-[90%] mx-auto text-center border-t border-yellow-500/30">
+            <h3 id="modalTitle" class="text-2xl font-serif-title text-gold mb-4">Notification</h3>
+            <p id="modalMessage" class="text-gray-300 mb-6 font-light">Message goes here.</p>
+            
+            <div id="pinInputContainer" class="hidden mb-6">
+                <input type="password" id="pinInput" placeholder="Enter Admin PIN" class="w-full bg-black/50 border border-yellow-600/50 rounded-lg px-4 py-2 text-center text-white tracking-[0.5em] focus:outline-none focus:border-yellow-400">
+                <p class="text-xs text-gray-400 mt-2">Hint: Try 1234</p>
+            </div>
+
+            <div class="flex justify-center gap-4">
+                <button id="modalSecondaryBtn" class="hidden px-5 py-2 rounded-full border border-gray-500 text-gray-300 hover:bg-gray-800 transition">Cancel</button>
+                <button id="modalPrimaryBtn" class="bg-gold text-black font-semibold px-6 py-2 rounded-full hover:scale-105 transition transform shadow-lg shadow-yellow-600/30">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN LANDING VIEW -->
+    <main id="mainView" class="relative z-10 flex flex-col items-center justify-center flex-grow w-full px-4 py-12">
+        
+        <!-- Animated Diya -->
+        <div class="relative w-40 h-40 mb-8 mt-12 flex justify-center items-end">
+            <div class="diya-glow-container absolute w-32 h-32 bottom-0"></div>
+            <!-- Base -->
+            <div class="absolute bottom-0 w-32 h-12 bg-gradient-to-b from-amber-700 to-amber-900 rounded-b-full border-t border-amber-400 z-10" style="border-top-width: 4px; box-shadow: inset 0 4px 6px rgba(0,0,0,0.4);">
+                <!-- Decorative dots -->
+                <div class="absolute top-2 w-full flex justify-center gap-2">
+                    <div class="w-1.5 h-1.5 bg-yellow-300 rounded-full"></div>
+                    <div class="w-1.5 h-1.5 bg-yellow-300 rounded-full"></div>
+                    <div class="w-1.5 h-1.5 bg-yellow-300 rounded-full"></div>
+                </div>
+            </div>
+            <!-- Flame Outer -->
+            <div class="flame absolute bottom-11 left-1/2 w-10 h-20 bg-gradient-to-t from-yellow-200 via-orange-500 to-red-600 rounded-full blur-[3px] z-20" style="border-radius: 50% 50% 20% 20% / 60% 60% 40% 40%;"></div>
+            <!-- Flame Inner -->
+            <div class="flame absolute bottom-11 left-1/2 w-5 h-12 bg-gradient-to-t from-white to-yellow-300 rounded-full blur-[1px] z-30" style="border-radius: 50% 50% 20% 20% / 60% 60% 40% 40%;"></div>
+        </div>
+
+        <h1 class="text-5xl md:text-7xl font-serif-title font-bold text-center mb-4 tracking-wide text-gold">Happy Diwali <span class="inline-block animate-bounce text-4xl">🪔</span></h1>
+        <p class="text-lg md:text-xl text-gray-300 text-center max-w-2xl mb-12 font-light leading-relaxed">
+            May the supreme light illumine your mind, enlighten your heart, and strengthen the human bonds in your homes and communities.
+        </p>
+
+        <!-- Interactive Controls -->
+        <div class="glass-panel p-6 rounded-3xl flex flex-col items-center gap-6 w-full max-w-md border-t-2 border-yellow-500/40">
+            <h2 class="text-xl font-medium text-yellow-200 tracking-wider">Musical Celebration</h2>
+            
+            <button id="playBtn" class="w-full bg-gold text-black text-lg font-semibold py-3 px-8 rounded-full shadow-[0_0_20px_rgba(191,149,63,0.5)] hover:scale-105 hover:shadow-[0_0_30px_rgba(252,246,186,0.8)] transition-all duration-300 flex items-center justify-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Light up the Celebration
+            </button>
+
+            <div id="audioControls" class="w-full flex gap-4 hidden transition-opacity duration-500 opacity-0">
+                <button id="pauseBtn" class="flex-1 glass-panel text-yellow-100 py-2 rounded-xl hover:bg-white/10 transition border border-yellow-500/30 flex items-center justify-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    Pause
+                </button>
+                <button id="stopBtn" class="flex-1 glass-panel text-red-300 py-2 rounded-xl hover:bg-white/10 transition border border-red-500/30 flex items-center justify-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" /></svg>
+                    Stop
+                </button>
+            </div>
+        </div>
+
+        <!-- Optional Location -->
+        <button id="locationBtn" class="mt-8 text-sm text-gray-400 hover:text-yellow-300 flex items-center gap-1 transition-colors underline decoration-dotted">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+            Share Location (Send blessings from your city)
+        </button>
+
+    </main>
+
+    <!-- ADMIN DASHBOARD VIEW (Hidden) -->
+    <main id="adminView" class="relative z-10 hidden flex-col items-center w-full px-4 py-12 max-w-6xl mx-auto min-h-screen">
+        <div class="w-full flex justify-between items-center mb-8">
+            <h2 class="text-3xl font-serif-title text-gold">Admin Analytics Dashboard</h2>
+            <button id="closeAdminBtn" class="text-gray-400 hover:text-white transition px-4 py-2 glass-panel rounded-lg">Close Dashboard</button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full mb-8">
+            <div class="glass-panel p-6 rounded-2xl flex flex-col">
+                <span class="text-gray-400 text-sm uppercase tracking-wider">Total Unique Visits</span>
+                <span id="statTotalVisits" class="text-4xl font-bold text-yellow-300 mt-2">-</span>
+            </div>
+            <div class="glass-panel p-6 rounded-2xl flex flex-col">
+                <span class="text-gray-400 text-sm uppercase tracking-wider">Recent Engagement</span>
+                <span class="text-4xl font-bold text-yellow-300 mt-2">Active</span>
+            </div>
+            <div class="glass-panel p-6 rounded-2xl flex flex-col">
+                <span class="text-gray-400 text-sm uppercase tracking-wider">GPS Shared</span>
+                <span id="statGps" class="text-4xl font-bold text-yellow-300 mt-2">-</span>
+            </div>
+        </div>
+
+        <div class="w-full glass-panel rounded-2xl overflow-hidden border border-gray-700">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead class="bg-black/40 text-yellow-200">
+                        <tr>
+                            <th class="px-6 py-4 font-medium">Visitor ID (Hash)</th>
+                            <th class="px-6 py-4 font-medium">Date & Time</th>
+                            <th class="px-6 py-4 font-medium">Referrer</th>
+                            <th class="px-6 py-4 font-medium">Device Info</th>
+                            <th class="px-6 py-4 font-medium">Location</th>
+                        </tr>
+                    </thead>
+                    <tbody id="analyticsTableBody" class="divide-y divide-gray-700 text-gray-300">
+                        <tr>
+                            <td colspan="5" class="px-6 py-8 text-center text-gray-500">Loading analytics data...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer with Admin Trigger -->
+    <footer class="relative z-10 w-full py-6 text-center text-sm text-gray-500 flex flex-col items-center gap-2">
+        <p>Made with ❤️ for Diwali</p>
+        <button id="adminTriggerBtn" class="opacity-30 hover:opacity-100 transition p-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
+            </svg>
+        </button>
+    </footer>
+
+    <!-- Firebase Scripts -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, updateDoc, collection, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global environment variables handling
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'diwali-celebration-app';
+        let firebaseConfig = null;
+        
+        try {
+            if (typeof __firebase_config !== 'undefined') {
+                firebaseConfig = JSON.parse(__firebase_config);
+            }
+        } catch(e) {
+            console.warn("Could not parse __firebase_config, relying on mockup if needed.");
+        }
+
+        // Generate a random UUID for the visitor if not exists
+        let visitorId = localStorage.getItem('diwali_visitor_id');
+        if (!visitorId) {
+            visitorId = crypto.randomUUID();
+            localStorage.setItem('diwali_visitor_id', visitorId);
+        }
+
+        let app, db, auth, visitorDocRef;
+        let isFirebaseInitialized = false;
+
+        async function initFirebase() {
+            if (!firebaseConfig) {
+                console.warn("Firebase not configured for this environment.");
+                return;
+            }
+            try {
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                // Authentication (Rule 3)
+                const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                if (token) {
+                    await signInWithCustomToken(auth, token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+                isFirebaseInitialized = true;
+                logInitialVisit();
+            } catch (error) {
+                console.error("Firebase Initialization Error:", error);
+            }
+        }
+
+        async function logInitialVisit() {
+            if (!isFirebaseInitialized || !auth.currentUser) return;
+
+            // Strict Path Rule: /artifacts/{appId}/public/data/visits
+            visitorDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'visits', visitorId);
+            
+            const visitData = {
+                visitorId: visitorId,
+                timestamp: new Date().toISOString(),
+                referrer: document.referrer || 'Direct Entry',
+                userAgent: navigator.userAgent,
+                platform: navigator.platform,
+                lastSeen: new Date().toISOString()
+            };
+
+            try {
+                await setDoc(visitorDocRef, visitData, { merge: true });
+            } catch (e) {
+                console.error("Error logging visit", e);
+            }
+        }
+
+        async function updateLocation(lat, lng) {
+            if (!isFirebaseInitialized || !visitorDocRef || !auth.currentUser) return;
+            try {
+                await updateDoc(visitorDocRef, {
+                    location: { lat, lng },
+                    locationSharedAt: new Date().toISOString()
+                });
+            } catch (e) {
+                console.error("Error updating location", e);
+            }
+        }
+
+        // Admin Dashboard Logic
+        let unsubscribeAnalytics = null;
+
+        async function loadAdminAnalytics() {
+            if (!isFirebaseInitialized || !auth.currentUser) {
+                showModal("Error", "Database connection not available.");
+                return;
+            }
+
+            const visitsRef = collection(db, 'artifacts', appId, 'public', 'data', 'visits');
+            
+            try {
+                // Realtime listener
+                unsubscribeAnalytics = onSnapshot(visitsRef, (snapshot) => {
+                    const tbody = document.getElementById('analyticsTableBody');
+                    tbody.innerHTML = '';
+                    
+                    let totalVisits = 0;
+                    let gpsCount = 0;
+
+                    if (snapshot.empty) {
+                        tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-8 text-center text-gray-500">No visits recorded yet.</td></tr>`;
+                    } else {
+                        // Using in-memory sorting since we can't use complex queries
+                        const docs = [];
+                        snapshot.forEach(doc => docs.push(doc.data()));
+                        
+                        docs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+                        docs.forEach(data => {
+                            totalVisits++;
+                            if(data.location) gpsCount++;
+
+                            const tr = document.createElement('tr');
+                            tr.className = "hover:bg-gray-800/50 transition-colors";
+                            
+                            const shortId = data.visitorId ? data.visitorId.substring(0, 8) + '...' : 'Unknown';
+                            const date = new Date(data.timestamp).toLocaleString();
+                            const locStr = data.location ? `${data.location.lat.toFixed(4)}, ${data.location.lng.toFixed(4)}` : 'Not Shared';
+                            const deviceStr = parseUserAgent(data.userAgent);
+
+                            tr.innerHTML = `
+                                <td class="px-6 py-4 font-mono text-xs">${shortId}</td>
+                                <td class="px-6 py-4">${date}</td>
+                                <td class="px-6 py-4 truncate max-w-[150px]" title="${data.referrer}">${data.referrer}</td>
+                                <td class="px-6 py-4 text-xs max-w-[200px] truncate" title="${data.userAgent}">${deviceStr}</td>
+                                <td class="px-6 py-4">
+                                    <span class="px-2 py-1 rounded-full text-xs ${data.location ? 'bg-green-900/50 text-green-300' : 'bg-gray-800 text-gray-400'}">${locStr}</span>
+                                </td>
+                            `;
+                            tbody.appendChild(tr);
+                        });
+                    }
+
+                    document.getElementById('statTotalVisits').innerText = totalVisits;
+                    document.getElementById('statGps').innerText = gpsCount;
+
+                }, (error) => {
+                    console.error("Snapshot error:", error);
+                    showModal("Access Denied", "Could not fetch analytics. Please check permissions.");
+                });
+            } catch (e) {
+                console.error("Error loading analytics", e);
+            }
+        }
+
+        function stopAdminAnalytics() {
+            if (unsubscribeAnalytics) {
+                unsubscribeAnalytics();
+                unsubscribeAnalytics = null;
+            }
+        }
+
+        function parseUserAgent(ua) {
+            if (!ua) return 'Unknown Device';
+            if (ua.includes('Mobi')) return 'Mobile Device';
+            if (ua.includes('Tablet')) return 'Tablet';
+            if (ua.includes('Windows')) return 'Windows PC';
+            if (ua.includes('Mac OS')) return 'Mac';
+            if (ua.includes('Linux')) return 'Linux';
+            return 'Desktop';
+        }
+
+        // Start initialization
+        initFirebase();
+
+
+        /* =========================================
+           UI & INTERACTION LOGIC
+           ========================================= */
+
+        // Modal Utility (Replaces alert/confirm)
+        const modalOverlay = document.getElementById('modalOverlay');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalMessage = document.getElementById('modalMessage');
+        const modalPrimaryBtn = document.getElementById('modalPrimaryBtn');
+        const modalSecondaryBtn = document.getElementById('modalSecondaryBtn');
+        const pinInputContainer = document.getElementById('pinInputContainer');
+        const pinInput = document.getElementById('pinInput');
+
+        let modalActionCallback = null;
+
+        function showModal(title, message, type = 'info', callback = null) {
+            modalTitle.innerText = title;
+            modalMessage.innerText = message;
+            modalActionCallback = callback;
+
+            pinInputContainer.classList.add('hidden');
+            pinInput.value = '';
+            modalSecondaryBtn.classList.add('hidden');
+            
+            if (type === 'pin') {
+                pinInputContainer.classList.remove('hidden');
+                modalSecondaryBtn.classList.remove('hidden');
+                modalSecondaryBtn.innerText = 'Cancel';
+                modalPrimaryBtn.innerText = 'Verify';
+                setTimeout(() => pinInput.focus(), 100);
+            } else if (type === 'confirm') {
+                modalSecondaryBtn.classList.remove('hidden');
+                modalSecondaryBtn.innerText = 'No';
+                modalPrimaryBtn.innerText = 'Yes';
+            } else {
+                modalPrimaryBtn.innerText = 'OK';
+            }
+
+            modalOverlay.classList.remove('hidden');
+        }
+
+        function hideModal() {
+            modalOverlay.classList.add('hidden');
+        }
+
+        modalPrimaryBtn.addEventListener('click', () => {
+            const val = pinInput.value;
+            hideModal();
+            if (modalActionCallback) modalActionCallback(true, val);
+        });
+
+        modalSecondaryBtn.addEventListener('click', () => {
+            hideModal();
+            if (modalActionCallback) modalActionCallback(false);
+        });
+
+
+        // Location logic
+        document.getElementById('locationBtn').addEventListener('click', () => {
+            if (!navigator.geolocation) {
+                showModal("Not Supported", "Geolocation is not supported by your browser.");
+                return;
+            }
+
+            showModal("Share Location", "Would you like to share your approximate city location to add to the global Diwali map?", "confirm", (confirmed) => {
+                if (confirmed) {
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            const { latitude, longitude } = position.coords;
+                            updateLocation(latitude, longitude);
+                            showModal("Thank You!", "Your blessings have been added from your location.");
+                        },
+                        (error) => {
+                            showModal("Location Error", "Could not retrieve your location. Permission might be denied.");
+                        }
+                    );
+                }
+            });
+        });
+
+        // Admin Navigation Logic
+        const mainView = document.getElementById('mainView');
+        const adminView = document.getElementById('adminView');
+
+        document.getElementById('adminTriggerBtn').addEventListener('click', () => {
+            showModal("Admin Access", "Please enter the dashboard PIN.", "pin", (confirmed, pin) => {
+                if (confirmed) {
+                    // Hardcoded PIN for demo purposes since we are in a single file frontend environment
+                    if (pin === '1234') {
+                        mainView.classList.add('hidden');
+                        adminView.classList.remove('hidden');
+                        adminView.classList.add('flex');
+                        loadAdminAnalytics();
+                    } else {
+                        showModal("Access Denied", "Incorrect PIN.");
+                    }
+                }
+            });
+        });
+
+        document.getElementById('closeAdminBtn').addEventListener('click', () => {
+            adminView.classList.add('hidden');
+            adminView.classList.remove('flex');
+            mainView.classList.remove('hidden');
+            stopAdminAnalytics();
+        });
+
+
+        /* =========================================
+           WEB AUDIO API - Raga Melody Synthesizer
+           ========================================= */
+        
+        let audioCtx;
+        let isPlaying = false;
+        let currentNoteIndex = 0;
+        let nextNoteTime = 0;
+        let timerID;
+
+        // Raga Bhoopali Scale (C, D, E, G, A) - Frequencies
+        const notes = {
+            C4: 261.63, D4: 293.66, E4: 329.63, G4: 392.00, A4: 440.00, C5: 523.25
+        };
+
+        // Melody Sequence: Array of [frequency, durationInBeats]
+        const melody = [
+            [notes.C4, 1], [notes.D4, 0.5], [notes.E4, 1.5], [notes.G4, 1],
+            [notes.A4, 2], [notes.G4, 0.5], [notes.E4, 0.5], [notes.D4, 1],
+            [notes.C4, 2], [notes.E4, 1], [notes.D4, 1], [notes.C4, 2]
+        ];
+
+        const tempo = 100; // Beats per minute
+        const secondsPerBeat = 60.0 / tempo;
+        const lookahead = 25; // ms
+        const scheduleAheadTime = 0.1; // s
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playNote(freq, time, duration) {
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            
+            // Flute/Bell like tone
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, time);
+
+            // Envelope shaping
+            gainNode.gain.setValueAtTime(0, time);
+            // Attack
+            gainNode.gain.linearRampToValueAtTime(0.4, time + 0.1);
+            // Decay & Sustain
+            gainNode.gain.exponentialRampToValueAtTime(0.1, time + 0.3);
+            // Release
+            gainNode.gain.exponentialRampToValueAtTime(0.001, time + duration);
+
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            osc.start(time);
+            osc.stop(time + duration);
+        }
+
+        function nextNote() {
+            const noteData = melody[currentNoteIndex];
+            const beatDuration = noteData[1] * secondsPerBeat;
+            
+            // Advance time and index
+            nextNoteTime += beatDuration;
+            currentNoteIndex++;
+            if (currentNoteIndex >= melody.length) {
+                currentNoteIndex = 0; // Loop melody
+            }
+        }
+
+        function scheduler() {
+            // Schedule notes that fall within our lookahead window
+            while (nextNoteTime < audioCtx.currentTime + scheduleAheadTime) {
+                const noteData = melody[currentNoteIndex];
+                // Add a small gap between notes for articulation
+                const articulationGap = 0.05; 
+                const noteDuration = (noteData[1] * secondsPerBeat) - articulationGap;
+                
+                playNote(noteData[0], nextNoteTime, noteDuration);
+                nextNote();
+            }
+            timerID = setTimeout(scheduler, lookahead);
+        }
+
+        const playBtn = document.getElementById('playBtn');
+        const audioControls = document.getElementById('audioControls');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const stopBtn = document.getElementById('stopBtn');
+
+        function startMelody() {
+            initAudio();
+            if (isPlaying) return;
+            isPlaying = true;
+            currentNoteIndex = 0;
+            nextNoteTime = audioCtx.currentTime + 0.1;
+            scheduler();
+
+            playBtn.classList.add('hidden');
+            audioControls.classList.remove('hidden');
+            setTimeout(() => audioControls.classList.remove('opacity-0'), 50);
+        }
+
+        function pauseMelody() {
+            if (!isPlaying) return;
+            clearTimeout(timerID);
+            if (audioCtx.state === 'running') {
+                audioCtx.suspend();
+            }
+            isPlaying = false;
+            pauseBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> Resume`;
+        }
+
+        function resumeMelody() {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            isPlaying = true;
+            nextNoteTime = audioCtx.currentTime + 0.1; // reset time context
+            scheduler();
+            pauseBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> Pause`;
+        }
+
+        function stopMelody() {
+            clearTimeout(timerID);
+            isPlaying = false;
+            if (audioCtx) {
+                audioCtx.close();
+                audioCtx = null;
+            }
+            
+            pauseBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> Pause`;
+            
+            audioControls.classList.add('opacity-0');
+            setTimeout(() => {
+                audioControls.classList.add('hidden');
+                playBtn.classList.remove('hidden');
+            }, 500);
+        }
+
+        playBtn.addEventListener('click', startMelody);
+        
+        pauseBtn.addEventListener('click', () => {
+            if (isPlaying) pauseMelody();
+            else resumeMelody();
+        });
+        
+        stopBtn.addEventListener('click', stopMelody);
+
+
+        /* =========================================
+           CANVAS PARTICLES (Sparkles/Stars)
+           ========================================= */
+        const canvas = document.getElementById('sparklesCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+            
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2 + 0.5;
+                this.speedX = Math.random() * 0.5 - 0.25;
+                this.speedY = Math.random() * -1 - 0.5; // Float upwards
+                this.opacity = Math.random() * 0.5 + 0.1;
+                this.fade = Math.random() * 0.02 + 0.005;
+                this.color = Math.random() > 0.5 ? '#fcf6ba' : '#ff9900';
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                
+                // Twinkle effect
+                this.opacity += this.fade;
+                if(this.opacity >= 0.8 || this.opacity <= 0.1) {
+                    this.fade = -this.fade;
+                }
+
+                // Reset if out of bounds
+                if (this.y < 0) {
+                    this.reset();
+                    this.y = canvas.height;
+                }
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = Math.max(0, Math.min(1, this.opacity));
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = this.color;
+                ctx.fill();
+                ctx.globalAlpha = 1;
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            const particleCount = Math.min(window.innerWidth / 10, 100);
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animateParticles);
+        }
+
+        initParticles();
+        animateParticles();
+
+    </script>
+</body>
+</html>
